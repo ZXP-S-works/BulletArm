@@ -93,6 +93,16 @@ class BlockStructureBasePlanner(BasePlanner):
 
     return self.encodeAction(constants.PICK_PRIMATIVE, x, y, z, r)
 
+  def reachRandomObj(self, objects=None):
+    if objects is None: objects = self.env.objects
+    npr.shuffle(objects)
+    object_poses = self.env.getObjectPoses(objects)
+
+    x, y, z, r = object_poses[0][0], object_poses[0][1], object_poses[0][2], object_poses[0][5]
+    z = z + 0.1
+
+    return self.encodeAction(constants.TELEPORT_PRIMSTIVE, x, y, z, r), objects[0]
+
   def pickRandomObjOnTop(self, objects=None):
     if objects is None: objects = self.env.objects
     npr.shuffle(objects)

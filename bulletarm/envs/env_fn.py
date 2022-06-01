@@ -64,6 +64,7 @@ from bulletarm.envs.close_loop_envs.close_loop_block_picking_corner import creat
 from bulletarm.envs.close_loop_envs.close_loop_drawer_opening import createCloseLoopDrawerOpeningEnv
 from bulletarm.envs.close_loop_envs.close_loop_household_picking import createCloseLoopHouseholdPickingEnv
 from bulletarm.envs.close_loop_envs.close_loop_household_picking_cluttered import createCloseLoopHouseholdPickingClutteredEnv
+from bulletarm.envs.close_loop_envs.open_close_loop_cluttered_grasping import createOpenCloseLoopClutteredGraspingEnv
 from bulletarm.envs.close_loop_envs.close_loop_block_pushing import createCloseLoopBlockPushingEnv
 from bulletarm.envs.close_loop_envs.close_loop_block_in_bowl import createCloseLoopBlockInBowlEnv
 
@@ -127,6 +128,7 @@ CREATE_ENV_FNS = {
   'close_loop_drawer_opening': createCloseLoopDrawerOpeningEnv,
   'close_loop_household_picking': createCloseLoopHouseholdPickingEnv,
   'close_loop_clutter_picking': createCloseLoopHouseholdPickingClutteredEnv,
+  'open_close_loop_clutter_grasping': createOpenCloseLoopClutteredGraspingEnv,
   'close_loop_block_pushing': createCloseLoopBlockPushingEnv,
   'close_loop_block_in_bowl': createCloseLoopBlockInBowlEnv,
 }

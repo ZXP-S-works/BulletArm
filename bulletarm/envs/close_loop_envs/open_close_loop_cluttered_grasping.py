@@ -2,14 +2,15 @@ import pybullet as pb
 import numpy as np
 
 from bulletarm.pybullet.utils import constants
-from bulletarm.envs.close_loop_envs.close_loop_env import CloseLoopEnv
+from bulletarm.envs.close_loop_envs.open_close_loop_env import OpenCloseLoopEnv
 from bulletarm.pybullet.utils import transformations
 from bulletarm.planners.close_loop_household_picking_cluttered_planner import CloseLoopHouseholdPickingClutteredPlanner
+from bulletarm.planners.block_picking_planner import BlockPickingPlanner
 from bulletarm.pybullet.equipments.tray import Tray
 from bulletarm.pybullet.utils.constants import NoValidPositionException
 
 
-class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
+class OpenCloseLoopClutteredGraspingEnv(OpenCloseLoopEnv):
   def __init__(self, config):
     if 'num_objects' not in config:
       config['num_objects'] = 15
@@ -43,7 +44,8 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
 
   def resetEnv(self):
     self.resetPybulletWorkspace()
-    self.robot.moveTo([self.workspace[0].mean(), self.workspace[1].mean(), 0.2], transformations.quaternion_from_euler(0, 0, 0))
+    self.robot.reset()
+    # self.robot.moveTo([self.workspace[0].mean(), self.workspace[1].mean(), 0.2], transformations.quaternion_from_euler(0, 0, 0))
     while True:
       try:
         for i in range(self.num_obj):
@@ -72,7 +74,8 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
     self.grasp_attempted = 0
     self.current_grasp_steps = 1
 
-    return self._getObservation()
+    # return self._getObservation()
+    return self._getTopDownObs()
 
   def step(self, action):
     self.current_grasp_steps += 1
@@ -106,9 +109,10 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
       ret = self.resetEnv()
     else:
       self.robot.reset()
-      self.robot.moveTo([self.workspace[0].mean(), self.workspace[1].mean(), 0.2],
-                        transformations.quaternion_from_euler(0, 0, 0))
-      ret = self._getObservation()
+      # self.robot.moveTo([self.workspace[0].mean(), self.workspace[1].mean(), 0.2],
+      #                   transformations.quaternion_from_euler(0, 0, 0))
+      # ret = self._getObservation()
+      ret = self._getTopDownObs()
     # TODO: set for other envs
     self.simulate_pos = self.robot._getEndEffectorPosition()
     self.simulate_rot = transformations.euler_from_quaternion(self.robot._getEndEffectorRotation())
@@ -144,22 +148,35 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
         return False
     return True
 
-def createCloseLoopHouseholdPickingClutteredEnv(config):
-  return CloseLoopHouseholdPickingClutteredEnv(config)
+def createOpenCloseLoopClutteredGraspingEnv(config):
+  return OpenCloseLoopClutteredGraspingEnv(config)
 
 if __name__ == '__main__':
   import matplotlib.pyplot as plt
-  workspace = np.asarray([[0.25, 0.65],
-                          [-0.2, 0.2],
-                          [0.01, 0.25]])
+
+  workspace_size = 0.4
+  workspace = np.asarray([[0.5-workspace_size/2, 0.5+workspace_size/2],
+                          [0-workspace_size/2, 0+workspace_size/2],
+                          [0.01, 0+workspace_size]])
+  # env_config = {'workspace': workspace, 'max_steps': 30, 'obs_size': 128, 'render': False, 'fast_mode': True,
+  #               'seed': 0, 'action_sequence': 'pxyr', 'num_objects': 15, 'random_orientation': True,
+  #               'reward_type': 'dense', 'simulate_grasp': True, 'perfect_grasp': True, 'robot': 'kuka',
+  #               'workspace_check': 'point', 'object_scale_range': (0.5, 0.5),
+  #               'min_object_distance': 0., 'min_boarder_padding': 0.15, 'adjust_gripper_after_lift': True
+  #               }
+  #
+  # workspace = np.asarray([[0.25, 0.65],
+  #                         [-0.2, 0.2],
+  #                         [0.01, 0.25]])
   env_config = {'workspace': workspace, 'max_steps': 100, 'obs_size': 128, 'render': True, 'fast_mode': True,
-                'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 2, 'random_orientation': False,
+                'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 15, 'random_orientation': False,
                 'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
                 'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8), 'hard_reset_freq': 1000}
   planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8}
   env_config['seed'] = 1
-  env = CloseLoopHouseholdPickingClutteredEnv(env_config)
-  planner = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)
+  env = OpenCloseLoopClutteredGraspingEnv(env_config)
+  planner0 = BlockPickingPlanner(env, planner_config)
+  planner1 = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)
   s, in_hand, obs = env.reset()
   # while True:
   #   current_pos = env.robot._getEndEffectorPosition()
@@ -180,12 +197,18 @@ if __name__ == '__main__':
   #   obs, reward, done = env.step(action)
 
   while True:
-    action = planner.getNextAction()
-    obs, reward, done = env.step(action)
-    if reward == 1:
-      print(1)
-    if done == 1:
-      print(2)
+    action, obj = planner0.reachRandomObj()
+    planner1.setNewTarget(obj=obj)
+    while True:
+      obs, reward, done = env.step(action)
+      # if reward == 1:
+      #   print(1)
+      # if done == 1:
+      #   print('Done')
+      if done == 1:
+        s, in_hand, obs = env.reset()
+        break
+      action = planner1.getNextAction(obj=obj)
 
   # fig, axs = plt.subplots(8, 5, figsize=(25, 40))
   # for i in range(40):

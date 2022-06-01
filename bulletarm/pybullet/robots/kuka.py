@@ -164,7 +164,8 @@ class Kuka(RobotBase):
     return pb.getJointState(self.id, 8)[3] >= 2 or pb.getJointState(self.id, 11)[3] <= -2
 
   def _calculateIK(self, pos, rot):
-    return pb.calculateInverseKinematics(self.id, self.end_effector_index, pos, rot, jointDamping=self.jd)[:7]
+    return pb.calculateInverseKinematics(self.id, self.end_effector_index, pos, rot,
+                                         jointDamping=self.jd, restPoses=self.home_positions_joint)[:7]
 
   def _getGripperJointPosition(self):
     p1 = -pb.getJointState(self.id, 8)[0]

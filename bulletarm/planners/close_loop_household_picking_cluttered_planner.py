@@ -20,14 +20,17 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
       primitive = constants.PICK_PRIMATIVE if self.stage == 0 else constants.PLACE_PRIMATIVE
     return self.env._encodeAction(primitive, x, y, z, r)
 
-  def setNewTarget(self):
+  def setNewTarget(self, obj=None):
     if self.stage == 0:
-      objects = np.array(list(filter(lambda x: not self.isObjectHeld(x) and self.isObjOnTop(x), self.env.objects)))
-      # object_poses = self.env.getObjectPoses(objects)
-      # sorted_inds = np.flip(np.argsort(object_poses[:,2], axis=0))
-      # objects = objects[sorted_inds]
-      np.random.shuffle(objects)
-      self.target_object = objects[0]
+      if obj is not None:
+        self.target_object = obj
+      else:
+        objects = np.array(list(filter(lambda x: not self.isObjectHeld(x) and self.isObjOnTop(x), self.env.objects)))
+        # object_poses = self.env.getObjectPoses(objects)
+        # sorted_inds = np.flip(np.argsort(object_poses[:,2], axis=0))
+        # objects = objects[sorted_inds]
+        np.random.shuffle(objects)
+        self.target_object = objects[0]
 
       object_pos = list(self.target_object.getPosition())
       object_pos[2] += (np.random.random() - 1) * 0.02
@@ -47,7 +50,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
       self.current_target = ((object_pos[0], object_pos[1], 0.2), object_rot, constants.PICK_PRIMATIVE)
       self.stage = 0
 
-  def getNextAction(self):
+  def getNextAction(self, obj=None):
     if self.env.current_episode_steps == 1 or self.env.grasp_done == 1:
       self.stage = 0
       self.current_target = None
@@ -55,7 +58,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
     if self.current_target is not None:
       return self.getNextActionToCurrentTarget()
     else:
-      self.setNewTarget()
+      self.setNewTarget(obj=obj)
       return self.getNextActionToCurrentTarget()
 
   def getStepsLeft(self):

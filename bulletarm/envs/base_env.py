@@ -284,6 +284,16 @@ class BaseEnv:
 
     return obs, reward, done
 
+  def teleport(self, action):
+    motion_primative, x, y, z, rot = self._decodeAction(action)
+    self.last_action = action
+    self.last_obj = self.robot.holding_obj
+
+    # Get transform for action
+    pos = [x, y, z]
+    rot_q = pb.getQuaternionFromEuler(rot)
+    self.robot.moveTo(pos, rot_q, False)
+
   def takeAction(self, action):
     motion_primative, x, y, z, rot = self._decodeAction(action)
     self.last_action = action
