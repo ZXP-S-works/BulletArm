@@ -1,6 +1,7 @@
 import pybullet as pb
 import numpy as np
 
+from bulletarm.planners.open_close_loop_picking_planner import OpenCloseLoopPickingPlanner
 from bulletarm.pybullet.utils import constants
 from bulletarm.envs.close_loop_envs.open_close_loop_env import OpenCloseLoopEnv
 from bulletarm.pybullet.utils import transformations
@@ -176,31 +177,30 @@ if __name__ == '__main__':
   env_config['seed'] = 1
   env = OpenCloseLoopClutteredGraspingEnv(env_config)
   planner0 = BlockPickingPlanner(env, planner_config)
-  planner1 = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)
   s, in_hand, obs = env.reset()
-  # while True:
-  #   current_pos = env.robot._getEndEffectorPosition()
-  #   current_rot = transformations.euler_from_quaternion(env.robot._getEndEffectorRotation())
-  #
-  #   block_pos = env.objects[0].getPosition()
-  #   block_rot = transformations.euler_from_quaternion(env.objects[0].getRotation())
-  #
-  #   pos_diff = block_pos - current_pos
-  #   rot_diff = np.array(block_rot) - current_rot
-  #   pos_diff[pos_diff // 0.01 > 1] = 0.01
-  #   pos_diff[pos_diff // -0.01 > 1] = -0.01
-  #
-  #   rot_diff[rot_diff // (np.pi/32) > 1] = np.pi/32
-  #   rot_diff[rot_diff // (-np.pi/32) > 1] = -np.pi/32
-  #
-  #   action = [1, pos_diff[0], pos_diff[1], pos_diff[2], rot_diff[2]]
-  #   obs, reward, done = env.step(action)
 
+  # planner1 = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)
+  # while True:
+  #   action, obj = planner0.reachRandomObj()
+  #   planner1.setNewTarget(obj=obj)
+  #   while True:
+  #     obs, reward, done = env.step(action)
+  #     # if reward == 1:
+  #     #   print(1)
+  #     # if done == 1:
+  #     #   print('Done')
+  #     if done == 1:
+  #       s, in_hand, obs = env.reset()
+  #       break
+  #     action = planner1.getNextAction(obj=obj)
+
+
+  planner1 = OpenCloseLoopPickingPlanner(env, planner_config)
   while True:
     action, obj = planner0.reachRandomObj()
-    planner1.setNewTarget(obj=obj)
+    obs, reward, done = env.step(action)
+    planner1.setNewTarget()
     while True:
-      obs, reward, done = env.step(action)
       # if reward == 1:
       #   print(1)
       # if done == 1:
@@ -208,12 +208,5 @@ if __name__ == '__main__':
       if done == 1:
         s, in_hand, obs = env.reset()
         break
-      action = planner1.getNextAction(obj=obj)
-
-  # fig, axs = plt.subplots(8, 5, figsize=(25, 40))
-  # for i in range(40):
-  #   action = planner.getNextAction()
-  #   obs, reward, done = env.step(action)
-  #   axs[i//5, i%5].imshow(obs[2][0], vmax=0.3)
-  # env.reset()
-  # fig.show()
+      action = planner1.getNextAction()
+      obs, reward, done = env.step(action)

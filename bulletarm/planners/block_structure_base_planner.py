@@ -99,7 +99,7 @@ class BlockStructureBasePlanner(BasePlanner):
     object_poses = self.env.getObjectPoses(objects)
 
     x, y, z, r = object_poses[0][0], object_poses[0][1], object_poses[0][2], object_poses[0][5]
-    z = z + 0.1
+    z = z + 0.05
 
     return self.encodeAction(constants.TELEPORT_PRIMSTIVE, x, y, z, r), objects[0]
 

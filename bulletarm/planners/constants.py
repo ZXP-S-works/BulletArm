@@ -1,3 +1,4 @@
+from bulletarm.planners.open_close_loop_picking_planner import OpenCloseLoopPickingPlanner
 from bulletarm.planners.random_planner import RandomPlanner
 from bulletarm.planners.multi_task_planner import MultiTaskPlanner
 from bulletarm.planners.play_planner import PlayPlanner
@@ -85,4 +86,5 @@ PLANNERS = {
   'close_loop_household_pushing':CloseLoopHouseholdPushingPlanner,
   'close_loop_block_pushing':CloseLoopBlockPushingPlanner,
   'close_loop_block_in_bowl':CloseLoopBlockInBowlPlanner,
+  'open_close_loop_clutter_grasping':OpenCloseLoopPickingPlanner,
 }
