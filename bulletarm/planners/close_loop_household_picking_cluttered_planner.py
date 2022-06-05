@@ -51,7 +51,9 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
       self.stage = 0
 
   def getNextAction(self, obj=None):
-    if self.env.current_episode_steps == 1 or self.env.grasp_done == 1:
+    if self.env.current_episode_steps == 1\
+            or self.env.current_episode_steps == 2\
+            or self.env.grasp_done == 1:
       self.stage = 0
       self.current_target = None
 

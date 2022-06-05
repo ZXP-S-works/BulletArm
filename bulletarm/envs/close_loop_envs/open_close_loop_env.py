@@ -57,7 +57,8 @@ class OpenCloseLoopEnv(CloseLoopEnv):
     valid = self.isSimValid()
     if valid:
       done = self._checkTermination()
-      reward = 1.0 if done else 0.0
+      # reward = 1.0 if done else 0.0
+      reward = 0
     else:
       done = True
       reward = 0

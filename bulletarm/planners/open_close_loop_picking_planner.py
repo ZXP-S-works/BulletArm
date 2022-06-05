@@ -22,5 +22,5 @@ class OpenCloseLoopPickingPlanner(CloseLoopHouseholdPickingClutteredPlanner):
     else:
       object_pos = self.env.robot._getEndEffectorPosition()
       object_rot = transformations.euler_from_quaternion(self.env.robot._getEndEffectorRotation())
-      self.current_target = ((object_pos[0], object_pos[1], 0.2), object_rot, constants.PICK_PRIMATIVE)
+      self.current_target = ((object_pos[0], object_pos[1], 0.21), object_rot, constants.PICK_PRIMATIVE)
       self.stage = 0

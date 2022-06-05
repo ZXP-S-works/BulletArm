@@ -15,7 +15,7 @@ class CloseLoopHouseholdPickingEnv(CloseLoopEnv):
   def reset(self):
     self.resetPybulletWorkspace()
     self.robot.moveTo([self.workspace[0].mean(), self.workspace[1].mean(), 0.2], transformations.quaternion_from_euler(0, 0, 0))
-    self._generateShapes(constants.RANDOM_HOUSEHOLD, 1, random_orientation=self.random_orientation)
+    self._generateShapes(constants.GRASP_NET_OBJ, 1, random_orientation=self.random_orientation)
     return self._getObservation()
 
   def _getValidOrientation(self, random_orientation):

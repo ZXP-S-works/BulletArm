@@ -58,7 +58,7 @@ class OpenCloseLoopClutteredGraspingEnv(OpenCloseLoopEnv):
           # obj = self._generateShapes(constants.RANDOM_HOUSEHOLD, 1, random_orientation=self.random_orientation,
           #                            pos=[randpos], padding=self.min_boarder_padding,
           #                            min_distance=self.min_object_distance, model_id=-1)
-          obj = self._generateShapes(constants.RANDOM_HOUSEHOLD200, 1,
+          obj = self._generateShapes(constants.GRASP_NET_OBJ, 1,
                                      random_orientation=self.random_orientation,
                                      pos=[randpos], padding=0.1,
                                      min_distance=0, model_id=i+2 if self.fix_set else -1)
@@ -89,8 +89,6 @@ class OpenCloseLoopClutteredGraspingEnv(OpenCloseLoopEnv):
       done = 1
     elif self.collision_terminate and self.robot.gripperHasForce() and not self._isHolding():
       done = 1
-    else:
-      done = 0
     self.grasp_done = done
     if self.coll_pen \
         and self.robot.gripperHasForce() \
@@ -110,6 +108,7 @@ class OpenCloseLoopClutteredGraspingEnv(OpenCloseLoopEnv):
       ret = self.resetEnv()
     else:
       self.robot.reset()
+      self.current_episode_steps = 1
       # self.robot.moveTo([self.workspace[0].mean(), self.workspace[1].mean(), 0.2],
       #                   transformations.quaternion_from_euler(0, 0, 0))
       # ret = self._getObservation()
@@ -128,13 +127,13 @@ class OpenCloseLoopClutteredGraspingEnv(OpenCloseLoopEnv):
 
   def _checkTermination(self):
     gripper_z = self.robot._getEndEffectorPosition()[-1]
+    if gripper_z > 0.2:
+      return True
     for obj in self.objects:
       if gripper_z > 0.15 and self._isObjectHeld(obj):
         self.obj_grasped += 1
         self._removeObject(obj)
-        if self.obj_grasped == self.num_obj or len(self.objects) == 0:
-          return True
-        return False
+        return True
     return False
     # return self.robot.holding_obj == self.objects[-1] and gripper_z > 0.08
 
@@ -199,7 +198,6 @@ if __name__ == '__main__':
   while True:
     action, obj = planner0.reachRandomObj()
     obs, reward, done = env.step(action)
-    planner1.setNewTarget()
     while True:
       # if reward == 1:
       #   print(1)
