@@ -28,7 +28,8 @@ class CloseLoopEnv(BaseEnv):
     if 'obs_type' not in config:
       config['obs_type'] = 'pixel'
     if 'view_scale' not in config:
-      config['view_scale'] = 1.5
+      # config['view_scale'] = 1.5
+      config['view_scale'] = 1
     if 'close_loop_tray' not in config:
       config['close_loop_tray'] = False
     super().__init__(config)
