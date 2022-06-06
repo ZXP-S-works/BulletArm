@@ -17,6 +17,9 @@ class OpenCloseLoopEnv(CloseLoopEnv):
     if config['robot'] == 'kuka':  # default in kuka.py
       self.robot.home_positions = [0.3926, 0., -2.137, 1.432, 0, -1.591, 0.071, 0., 0., 0., 0., 0., 0., 0., 0.]
       self.robot.home_positions_joint = self.robot.home_positions[:7]
+    if config['robot'] == 'panda':
+      self.robot.home_positions = [0.60, -0.14, 0.59, -2.40, 0.11, 2.28, -1, 0.0, 0, 0, 0, 0, 0]
+      self.robot.home_positions_joint = self.robot.home_positions[:7]
 
 
   def step(self, action):
@@ -81,6 +84,6 @@ class OpenCloseLoopEnv(CloseLoopEnv):
 
   def _getTopDownObs(self):
     self.initSensor()
-    heightmap =  self.sensor.getHeightmap(self.heightmap_size)
+    heightmap = self.sensor.getHeightmap(self.heightmap_size)
     heightmap = heightmap.reshape([1, self.heightmap_size, self.heightmap_size])
     return self._isHolding(), None, heightmap

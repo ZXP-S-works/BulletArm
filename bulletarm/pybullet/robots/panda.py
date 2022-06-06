@@ -156,7 +156,8 @@ class Panda(RobotBase):
         return obj
 
   def _calculateIK(self, pos, rot):
-    return pb.calculateInverseKinematics(self.id, self.end_effector_index, pos, rot, self.ll, self.ul, self.jr)[:self.num_dofs]
+    return pb.calculateInverseKinematics(self.id, self.end_effector_index, pos, rot, self.ll, self.ul, self.jr,
+                                         restPoses=self.home_positions_joint)[:self.num_dofs]
 
   def _getGripperJointPosition(self):
     p1 = pb.getJointState(self.id, 9)[0]

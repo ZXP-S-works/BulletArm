@@ -14,7 +14,9 @@ class CloseLoopPlanner(BasePlanner):
     current_pos = self.env.robot._getEndEffectorPosition()
     current_rot = transformations.euler_from_quaternion(self.env.robot._getEndEffectorRotation())
     pos_diff = goal_pos - current_pos
-    rot_diff = np.array(goal_rot) % (np.pi / 2) - np.array(current_rot) % (np.pi / 2)  # assuming mirroring symmetric gripper
+    rot_diff = np.array(goal_rot) % np.pi - np.array(current_rot) % np.pi  # assuming mirroring symmetric gripper
+    rot_diff[rot_diff > np.pi / 2] -= np.pi
+    rot_diff[rot_diff < -np.pi / 2] += np.pi
 
     # R = np.array([[np.cos(-current_rot[-1]), -np.sin(-current_rot[-1])],
     #               [np.sin(-current_rot[-1]), np.cos(-current_rot[-1])]])
