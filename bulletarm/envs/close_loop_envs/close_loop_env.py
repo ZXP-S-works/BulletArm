@@ -36,7 +36,7 @@ class CloseLoopEnv(BaseEnv):
     self.view_type = config['view_type']
     self.obs_type = config['obs_type']
     assert self.view_type in ['render_center', 'render_center_height', 'render_fix', 'camera_center_xyzr', 'camera_center_xyr',
-                              'camera_center_xyz', 'camera_center_xy', 'camera_fix',
+                              'camera_center_xyz', 'camera_center_xy', 'camera_fix', 'camera_center_xyz_segm',
                               'camera_center_xyr_height', 'camera_center_xyz_height', 'camera_center_xy_height',
                               'camera_fix_height', 'camera_center_z', 'camera_center_z_height',
                               'pers_center_xyz']
@@ -216,13 +216,12 @@ class CloseLoopEnv(BaseEnv):
     if self.obs_type == 'pixel':
       self.heightmap = self._getHeightmap()
       gripper_img = self.getGripperImg()
-      heightmap = self.heightmap
+      heightmap = self.heightmap.reshape([-1, self.heightmap_size, self.heightmap_size])
       if self.view_type.find('height') > -1:
         gripper_pos = self.robot._getEndEffectorPosition()
-        heightmap[gripper_img == 1] = gripper_pos[2]
+        heightmap[0, gripper_img == 1] = gripper_pos[2]
       else:
-        heightmap[gripper_img == 1] = 0
-      heightmap = heightmap.reshape([1, self.heightmap_size, self.heightmap_size])
+        heightmap[0, gripper_img == 1] = 0
       # gripper_img = gripper_img.reshape([1, self.heightmap_size, self.heightmap_size])
       return self._isHolding(), None, heightmap
     else:
@@ -329,18 +328,25 @@ class CloseLoopEnv(BaseEnv):
       else:
         depth = heightmap
       return depth
-    elif self.view_type in ['camera_center_xyz', 'camera_center_xyz_height']:
+    elif self.view_type in ['camera_center_xyz', 'camera_center_xyz_height', 'camera_center_xyz_segm']:
       # xyz centered, gripper will be visible
       gripper_pos[2] += gripper_z_offset
       target_pos = [gripper_pos[0], gripper_pos[1], 0]
       cam_up_vector = [-1, 0, 0]
       self.sensor.setCamMatrix(gripper_pos, cam_up_vector, target_pos)
-      heightmap = self.sensor.getHeightmap(self.heightmap_size)
-      if self.view_type == 'camera_center_xyz':
-        depth = -heightmap + gripper_pos[2]
+      if self.view_type == 'camera_center_xyz_segm':
+        heightmap, segmentation = self.sensor.getHeightmapSegmentation(self.heightmap_size)
       else:
-        depth = heightmap
-      return depth
+        heightmap = self.sensor.getHeightmap(self.heightmap_size)
+      if self.view_type in ['camera_center_xyz', 'camera_center_xyz_segm']:
+        obs = -heightmap + gripper_pos[2]
+        if self.view_type == 'camera_center_xyz_segm':
+          obs = obs.reshape(1, self.heightmap_size, self.heightmap_size)
+          segmentation = segmentation.reshape(1, self.heightmap_size, self.heightmap_size)
+          obs = np.concatenate((obs, segmentation), axis=0)
+      else:
+        obs = heightmap
+      return obs
     elif self.view_type in ['pers_center_xyz']:
       # xyz centered, gripper will be visible
       gripper_pos[2] += gripper_z_offset

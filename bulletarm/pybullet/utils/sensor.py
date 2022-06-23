@@ -32,6 +32,19 @@ class Sensor(object):
 
     return np.abs(depth - np.max(depth)).reshape(size, size)
 
+  def getHeightmapSegmentation(self, size):
+    image_arr = pb.getCameraImage(width=size, height=size,
+                                  viewMatrix=self.view_matrix,
+                                  projectionMatrix=self.proj_matrix,
+                                  renderer=pb.ER_TINY_RENDERER)
+    depth_img = np.array(image_arr[3])
+    depth = self.far * self.near / (self.far - (self.far - self.near) * depth_img)
+    depth = np.abs(depth - np.max(depth)).reshape(size, size)
+    segmentation = np.array(image_arr[4])
+    segmentation = segmentation == segmentation.max()
+    segmentation = segmentation.reshape(size, size)
+    return depth, segmentation
+
   def getPointCloud(self, size, to_numpy=True):
     image_arr = pb.getCameraImage(width=size, height=size,
                                   viewMatrix=self.view_matrix,

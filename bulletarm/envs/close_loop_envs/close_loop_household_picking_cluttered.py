@@ -155,7 +155,8 @@ if __name__ == '__main__':
   env_config = {'workspace': workspace, 'max_steps': 100, 'obs_size': 128, 'render': True, 'fast_mode': True,
                 'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 2, 'random_orientation': False,
                 'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
-                'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8), 'hard_reset_freq': 1000}
+                'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8),
+                'view_type': 'camera_center_xyz_segm', 'hard_reset_freq': 1000}
   planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8}
   env_config['seed'] = 1
   env = CloseLoopHouseholdPickingClutteredEnv(env_config)
@@ -185,6 +186,7 @@ if __name__ == '__main__':
     if reward == 1:
       print(1)
     if done == 1:
+      env.reset()
       print(2)
 
   # fig, axs = plt.subplots(8, 5, figsize=(25, 40))
