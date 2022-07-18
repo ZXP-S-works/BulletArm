@@ -35,11 +35,11 @@ class CloseLoopEnv(BaseEnv):
     super().__init__(config)
     self.view_type = config['view_type']
     self.obs_type = config['obs_type']
-    assert self.view_type in ['render_center', 'render_center_height', 'render_fix', 'camera_center_xyzr', 'camera_center_xyr',
-                              'camera_center_xyz', 'camera_center_xy', 'camera_fix', 'camera_center_xyz_segm',
-                              'camera_center_xyr_height', 'camera_center_xyz_height', 'camera_center_xy_height',
-                              'camera_fix_height', 'camera_center_z', 'camera_center_z_height',
-                              'pers_center_xyz']
+    assert self.view_type in ['render_center', 'render_center_height', 'render_fix', 'camera_center_xyzr',
+                              'camera_center_xyr', 'camera_center_xyz', 'camera_center_xy', 'camera_fix',
+                              'camera_center_xyz_segm', 'camera_center_xyr_height', 'camera_center_xyz_height',
+                              'camera_center_xy_height', 'camera_fix_height', 'camera_center_z',
+                              'camera_center_z_height', 'pers_center_xyz']
     self.view_scale = config['view_scale']
     self.robot_type = config['robot']
     if config['robot'] == 'kuka':

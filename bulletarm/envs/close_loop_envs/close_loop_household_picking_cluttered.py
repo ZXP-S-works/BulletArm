@@ -38,6 +38,7 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
 
     self.obj_grasped = 0
     self.grasp_done = 0
+    self.graped_obj_ID = None
     self.grasp_attempted = 0
     self.current_grasp_steps = 1
 
@@ -79,7 +80,14 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
     pre_obj_grasped = self.obj_grasped
     obs, reward, done = super().step(action)
     if self.obj_grasped > pre_obj_grasped:
-      reward = 1.0
+      if self.view_type == "camera_center_xyz_segm":
+        reward = 1.0 if self.graped_obj_ID == self.sensor.max_obj_ID else 0
+        # # sensor segmentation map visualization
+        # plt.figure()
+        # plt.imshow(obs[2][1, :])
+        # plt.show()
+      else:
+        reward = 1.0
       done = 1
     elif not self.isSimValid() or self.current_grasp_steps > self.max_steps:
       done = 1
@@ -126,6 +134,7 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
     for obj in self.objects:
       if gripper_z > 0.15 and self._isObjectHeld(obj):
         self.obj_grasped += 1
+        self.graped_obj_ID = obj.object_id
         self._removeObject(obj)
         if self.obj_grasped == self.num_obj or len(self.objects) == 0:
           return True
@@ -153,11 +162,11 @@ if __name__ == '__main__':
                           [-0.2, 0.2],
                           [0.01, 0.25]])
   env_config = {'workspace': workspace, 'max_steps': 100, 'obs_size': 128, 'render': True, 'fast_mode': True,
-                'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 2, 'random_orientation': False,
+                'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 15, 'random_orientation': False,
                 'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
                 'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8),
                 'view_type': 'camera_center_xyz_segm', 'hard_reset_freq': 1000}
-  planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8}
+  planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8, 'view_type': env_config['view_type']}
   env_config['seed'] = 1
   env = CloseLoopHouseholdPickingClutteredEnv(env_config)
   planner = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)

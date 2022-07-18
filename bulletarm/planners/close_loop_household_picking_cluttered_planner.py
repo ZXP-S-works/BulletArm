@@ -10,6 +10,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
     self.current_target = None
     self.target_object = None
     self.stage = 0
+    self.view_type = config['view_type']
 
   def getNextActionToCurrentTarget(self):
     x, y, z, r = self.getActionByGoalPose(self.current_target[0], self.current_target[1])
@@ -26,11 +27,16 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
         self.target_object = obj
       else:
         objects = np.array(list(filter(lambda x: not self.isObjectHeld(x) and self.isObjOnTop(x), self.env.objects)))
-        # object_poses = self.env.getObjectPoses(objects)
-        # sorted_inds = np.flip(np.argsort(object_poses[:,2], axis=0))
-        # objects = objects[sorted_inds]
-        np.random.shuffle(objects)
-        self.target_object = objects[0]
+        if self.view_type == 'camera_center_xyz_segm':
+          objects_id = np.array(list(i.object_id for i in objects))
+          max_id = objects_id.argmax()
+          self.target_object = objects[max_id]
+        else:
+          # object_poses = self.env.getObjectPoses(objects)
+          # sorted_inds = np.flip(np.argsort(object_poses[:,2], axis=0))
+          # objects = objects[sorted_inds]
+          np.random.shuffle(objects)
+          self.target_object = objects[0]
 
       object_pos = list(self.target_object.getPosition())
       object_pos[2] += (np.random.random() - 1) * 0.02

@@ -13,6 +13,7 @@ class Sensor(object):
     self.far = far
     self.fov = np.degrees(2 * np.arctan((target_size / 2) / self.far))
     self.proj_matrix = pb.computeProjectionMatrixFOV(self.fov, 1, self.near, self.far)
+    self.max_obj_ID = None
 
   def setCamMatrix(self, cam_pos, cam_up_vector, target_pos):
     self.view_matrix = pb.computeViewMatrix(
@@ -41,7 +42,8 @@ class Sensor(object):
     depth = self.far * self.near / (self.far - (self.far - self.near) * depth_img)
     depth = np.abs(depth - np.max(depth)).reshape(size, size)
     segmentation = np.array(image_arr[4])
-    segmentation = segmentation == segmentation.max()
+    self.max_obj_ID = segmentation.max()
+    segmentation = segmentation == self.max_obj_ID
     segmentation = segmentation.reshape(size, size)
     return depth, segmentation
 
