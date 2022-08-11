@@ -10,7 +10,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
     self.current_target = None
     self.target_object = None
     self.stage = 0
-    self.view_type = config['view_type']
+    self.view_type = config['view_type'] if 'view_type' in config.keys() else None
 
   def getNextActionToCurrentTarget(self):
     x, y, z, r = self.getActionByGoalPose(self.current_target[0], self.current_target[1])

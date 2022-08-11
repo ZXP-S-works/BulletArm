@@ -42,6 +42,8 @@ class BaseEnv:
 
     # Setup environment
     self.workspace = config['workspace']
+    if not isinstance(self.workspace, np.ndarray):
+      self.workspace = np.asarray(self.workspace)
     self.workspace_size = np.linalg.norm(self.workspace[0,1] - self.workspace[0,0])
     self.pos_candidate = config['pos_candidate'].astype(np.int) if config['pos_candidate'] else None
     self.max_steps = config['max_steps']
