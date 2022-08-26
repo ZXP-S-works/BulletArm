@@ -53,7 +53,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
       object_pos = self.target_object.getPosition()
       object_rot = list(transformations.euler_from_quaternion(self.target_object.getRotation()))
       object_rot[2] = transformations.euler_from_quaternion(self.env.robot._getEndEffectorRotation())[2]
-      self.current_target = ((object_pos[0], object_pos[1], 0.2), object_rot, constants.PICK_PRIMATIVE)
+      self.current_target = ((object_pos[0], object_pos[1], 0.21), object_rot, constants.PICK_PRIMATIVE)
       self.stage = 0
 
   def getNextAction(self, obj=None):

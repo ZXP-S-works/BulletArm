@@ -33,7 +33,7 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
       self.collision_terminate = False
     else:
       self.collision_terminate = config['collision_terminate']
-
+    self.z_termination = config['z_termination']
     self.max_grasp_attempt = int(self.num_obj * 1.5)
 
     self.obj_grasped = 0
@@ -79,6 +79,7 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
     self.current_grasp_steps += 1
     pre_obj_grasped = self.obj_grasped
     obs, reward, done = super().step(action)
+    reward = 0.
     if self.obj_grasped > pre_obj_grasped:
       if self.view_type == "camera_center_xyz_segm":
         reward = 1.0 if self.graped_obj_ID == self.sensor.max_obj_ID else 0
@@ -93,8 +94,8 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
       done = 1
     elif self.collision_terminate and self.robot.gripperHasForce() and not self._isHolding():
       done = 1
-    else:
-      done = 0
+    # else:
+    #   done = 0
     self.grasp_done = done
     if self.coll_pen \
         and self.robot.gripperHasForce() \
@@ -130,15 +131,20 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
     return orientation
 
   def _checkTermination(self):
+    z_threshold = 0.2
     gripper_z = self.robot._getEndEffectorPosition()[-1]
+
     for obj in self.objects:
-      if gripper_z > 0.15 and self._isObjectHeld(obj):
+      if gripper_z > z_threshold and self._isObjectHeld(obj):
         self.obj_grasped += 1
         self.graped_obj_ID = obj.object_id
         self._removeObject(obj)
         if self.obj_grasped == self.num_obj or len(self.objects) == 0:
           return True
         return False
+
+    if self.z_termination and gripper_z > z_threshold:
+      return True
     return False
     # return self.robot.holding_obj == self.objects[-1] and gripper_z > 0.08
 
@@ -165,7 +171,7 @@ if __name__ == '__main__':
                 'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 15, 'random_orientation': False,
                 'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
                 'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8),
-                'view_type': 'camera_center_xyz_segm', 'hard_reset_freq': 1000}
+                'view_type': 'camera_center_xyz', 'hard_reset_freq': 1000, 'z_termination': False}
   planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8, 'view_type': env_config['view_type']}
   env_config['seed'] = 1
   env = CloseLoopHouseholdPickingClutteredEnv(env_config)
@@ -192,11 +198,9 @@ if __name__ == '__main__':
   while True:
     action = planner.getNextAction()
     obs, reward, done = env.step(action)
-    if reward == 1:
-      print(1)
     if done == 1:
+      print('r:' + str(reward))
       env.reset()
-      print(2)
 
   # fig, axs = plt.subplots(8, 5, figsize=(25, 40))
   # for i in range(40):
