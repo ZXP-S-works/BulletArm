@@ -115,6 +115,7 @@ class CloseLoopEnv(BaseEnv):
     pos[0] = np.clip(pos[0], self.workspace[0, 0], self.workspace[0, 1])
     pos[1] = np.clip(pos[1], self.workspace[1, 0], self.workspace[1, 1])
     pos[2] = np.clip(pos[2], self.workspace[2, 0], self.workspace[2, 1])
+    self.robot.controlGripper(p)
     self.robot.moveTo(pos, rot_q, dynamic=True)
     self.robot.controlGripper(p)
     self.robot.adjustGripperCommand()

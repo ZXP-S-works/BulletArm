@@ -14,7 +14,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
 
   def getNextActionToCurrentTarget(self):
     x, y, z, r = self.getActionByGoalPose(self.current_target[0], self.current_target[1])
-    if np.all(np.abs([x, y, z]) < self.dpos) and np.abs(r) < self.drot:
+    if np.all(np.abs([x, y, z]) < self.dpos / 2) and np.abs(r) < self.drot / 2:
       primitive = constants.PICK_PRIMATIVE if self.current_target[2] is constants.PICK_PRIMATIVE else constants.PLACE_PRIMATIVE
       self.current_target = None
     else:
@@ -53,12 +53,14 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
       object_pos = self.target_object.getPosition()
       object_rot = list(transformations.euler_from_quaternion(self.target_object.getRotation()))
       object_rot[2] = transformations.euler_from_quaternion(self.env.robot._getEndEffectorRotation())[2]
-      self.current_target = ((object_pos[0], object_pos[1], 0.21), object_rot, constants.PICK_PRIMATIVE)
+      self.current_target = ((object_pos[0], object_pos[1], 0.2), object_rot, constants.PICK_PRIMATIVE)
       self.stage = 0
 
   def getNextAction(self, obj=None):
-    if self.env.current_episode_steps == 1\
-            or self.env.current_episode_steps == 2\
+    # if self.env.current_episode_steps == 1\
+    #         or self.env.current_episode_steps == 2\
+    #         or self.env.grasp_done == 1:
+    if self.env.current_episode_steps == 0\
             or self.env.grasp_done == 1:
       self.stage = 0
       self.current_target = None
