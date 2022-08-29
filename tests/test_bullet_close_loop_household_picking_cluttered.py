@@ -14,18 +14,19 @@ class TestBulletHouseholdPickingCluttered(unittest.TestCase):
                           [-0.2, 0.2],
                           [0.01, 0.25]])
   env_config = {'workspace': workspace, 'max_steps': 100, 'obs_size': 128, 'render': True, 'fast_mode': True,
-                'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 2, 'random_orientation': False,
+                'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 15, 'random_orientation': False,
                 'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
-                'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8), 'hard_reset_freq': 1000}
+                'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8),
+                'view_type': 'camera_center_xyz', 'hard_reset_freq': 1000, 'z_termination': False}
   planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8}
   env_config['seed'] = 1
   # env = CloseLoopHouseholdPickingClutteredEnv(env_config)
   # planner = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)
 
   def testPlanner2(self):
-    self.env_config['render'] = True
+    self.env_config['render'] = False
     self.env_config['seed'] = 0
-    num_processes = 1
+    num_processes = 10
     env = env_factory.createEnvs(num_processes,  'close_loop_clutter_picking', self.env_config, self.planner_config)
     total = 0
     s = 0
