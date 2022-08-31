@@ -122,6 +122,7 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
     self.simulate_pos = self.robot._getEndEffectorPosition()
     self.simulate_rot = transformations.euler_from_quaternion(self.robot._getEndEffectorRotation())
     self.current_episode_steps = 0
+    self.previous_p = 1
     return ret
 
   def _getValidOrientation(self, random_orientation):
@@ -172,7 +173,7 @@ if __name__ == '__main__':
                 'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 15, 'random_orientation': False,
                 'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
                 'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8),
-                'view_type': 'camera_center_xyz', 'hard_reset_freq': 1000, 'z_termination': True}
+                'view_type': 'camera_center_xyz', 'hard_reset_freq': 1000, 'z_termination': True, 'binary_gripper': True}
   planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8, 'view_type': env_config['view_type']}
   env_config['seed'] = 1
   env = CloseLoopHouseholdPickingClutteredEnv(env_config)

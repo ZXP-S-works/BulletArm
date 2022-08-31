@@ -32,6 +32,8 @@ class CloseLoopEnv(BaseEnv):
       config['view_scale'] = 1
     if 'close_loop_tray' not in config:
       config['close_loop_tray'] = False
+    if 'binary_gripper' not in config:
+      config['binary_gripper'] = False
     super().__init__(config)
     self.view_type = config['view_type']
     self.obs_type = config['obs_type']
@@ -47,6 +49,7 @@ class CloseLoopEnv(BaseEnv):
       self.robot.home_positions_joint = self.robot.home_positions[:7]
 
     self.has_tray = config['close_loop_tray']
+    self.binary_gripper = config['binary_gripper']
     self.bin_size = self.workspace_size - 0.05
     self.tray = None
     if self.has_tray:
@@ -96,6 +99,9 @@ class CloseLoopEnv(BaseEnv):
 
   def step(self, action):
     p, x, y, z, rot = self._decodeAction(action)
+    if self.binary_gripper and p != self.previous_p:
+      x, y, z, rot = 0, 0, 0, 0
+      self.previous_p = p
     current_pos = self.robot._getEndEffectorPosition()
     current_rot = list(transformations.euler_from_quaternion(self.robot._getEndEffectorRotation()))
     if self.action_sequence.count('r') == 1:
