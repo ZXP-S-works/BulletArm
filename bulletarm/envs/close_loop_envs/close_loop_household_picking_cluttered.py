@@ -133,7 +133,7 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
     return orientation
 
   def _checkTermination(self):
-    z_threshold = 0.16
+    z_threshold = 0.21
     gripper_z = self.robot._getEndEffectorPosition()[-1]
 
     for obj in self.objects:
@@ -171,7 +171,7 @@ if __name__ == '__main__':
                           [0.01, 0.25]])
   env_config = {'workspace': workspace, 'max_steps': 100, 'obs_size': 128, 'render': True, 'fast_mode': True,
                 'seed': 2, 'action_sequence': 'pxyzr', 'num_objects': 15, 'random_orientation': False,
-                'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
+                'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'panda',
                 'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8),
                 'view_type': 'camera_center_xyz', 'hard_reset_freq': 1000, 'z_termination': True, 'binary_gripper': True}
   planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8, 'view_type': env_config['view_type']}

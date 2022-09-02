@@ -230,6 +230,9 @@ class CloseLoopEnv(BaseEnv):
       else:
         heightmap[0, gripper_img == 1] = 0
       # gripper_img = gripper_img.reshape([1, self.heightmap_size, self.heightmap_size])
+      # img = (self.heightmap).astype(np.float32).reshape(self.heightmap_size, self.heightmap_size, 1)
+      # temp_map = cv2.inpaint(img, gripper_img.reshape(self.heightmap_size, self.heightmap_size, 1).astype(np.uint8), 10,
+      #                        cv2.INPAINT_NS)
       return self._isHolding(), None, heightmap
     else:
       obs = self._getVecObservation()
@@ -280,7 +283,10 @@ class CloseLoopEnv(BaseEnv):
     im = np.zeros((self.heightmap_size, self.heightmap_size))
     gripper_half_size = 5 * self.workspace_size / self.obs_size_m
     gripper_half_size = round(gripper_half_size/128*self.heightmap_size)
-    if self.robot_type in ['panda', 'ur5', 'ur5_robotiq']:
+    if self.robot_type in ['panda']:
+      gripper_max_open = 30 * self.workspace_size / self.obs_size_m
+      gripper_half_size = 3
+    elif self.robot_type in ['ur5', 'ur5_robotiq']:
       gripper_max_open = 42 * self.workspace_size / self.obs_size_m
     elif self.robot_type == 'kuka':
       gripper_max_open = 45 * self.workspace_size / self.obs_size_m
