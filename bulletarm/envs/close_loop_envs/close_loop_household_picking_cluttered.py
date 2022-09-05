@@ -5,6 +5,7 @@ from bulletarm.pybullet.utils import constants
 from bulletarm.envs.close_loop_envs.close_loop_env import CloseLoopEnv
 from bulletarm.pybullet.utils import transformations
 from bulletarm.planners.close_loop_household_picking_cluttered_planner import CloseLoopHouseholdPickingClutteredPlanner
+from bulletarm.planners.open_close_loop_rl_household_picking_cluttered_planner import OpenCloseLoopRLHouseholdPickingClutteredPlanner
 from bulletarm.pybullet.equipments.tray import Tray
 from bulletarm.pybullet.utils.constants import NoValidPositionException
 
@@ -25,6 +26,10 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
       self.coll_pen = False
     else:
       self.coll_pen = config['collision_penalty']
+    if 'step_penalty' not in config:
+      self.step_penalty = 0
+    else:
+      self.step_penalty = config['step_penalty']
     if 'fix_set' not in config:
       self.fix_set = False
     else:
@@ -101,6 +106,7 @@ class CloseLoopHouseholdPickingClutteredEnv(CloseLoopEnv):
         and self.robot.gripperHasForce() \
         and not self._isHolding():
       reward -= 0.1
+    reward -= self.step_penalty
     return obs, reward, done
 
   def reset(self):
@@ -178,6 +184,7 @@ if __name__ == '__main__':
   env_config['seed'] = 1
   env = CloseLoopHouseholdPickingClutteredEnv(env_config)
   planner = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)
+  # planner = OpenCloseLoopRLHouseholdPickingClutteredPlanner(env, planner_config)
   s, in_hand, obs = env.reset()
 
   while True:
