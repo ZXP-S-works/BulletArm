@@ -7,6 +7,7 @@ from bulletarm.pybullet.utils.ortho_sensor import OrthographicSensor
 from bulletarm.pybullet.utils.sensor import Sensor
 from bulletarm.pybullet.equipments.tray import Tray
 from scipy.ndimage import rotate
+import cv2
 
 
 class CloseLoopEnv(BaseEnv):
@@ -41,7 +42,7 @@ class CloseLoopEnv(BaseEnv):
                               'camera_center_xyr', 'camera_center_xyz', 'camera_center_xy', 'camera_fix',
                               'camera_center_xyz_segm', 'camera_center_xyr_height', 'camera_center_xyz_height',
                               'camera_center_xy_height', 'camera_fix_height', 'camera_center_z',
-                              'camera_center_z_height', 'pers_center_xyz']
+                              'camera_center_z_height', 'pers_center_xyz', 'camera_center_xyz_2channel']
     self.view_scale = config['view_scale']
     self.robot_type = config['robot']
     if config['robot'] == 'kuka':
@@ -224,15 +225,17 @@ class CloseLoopEnv(BaseEnv):
       self.heightmap = self._getHeightmap()
       gripper_img = self.getGripperImg()
       heightmap = self.heightmap.reshape([-1, self.heightmap_size, self.heightmap_size])
-      if self.view_type.find('height') > -1:
+      if self.view_type == 'camera_center_xyz_2channel':
+        gripper_img = gripper_img.reshape([1, self.heightmap_size, self.heightmap_size])
+        img = (self.heightmap).astype(np.float32).reshape(self.heightmap_size, self.heightmap_size, 1)
+        object_img = cv2.inpaint(img, gripper_img.reshape(self.heightmap_size, self.heightmap_size, 1).astype(np.uint8), 10,
+                               cv2.INPAINT_NS)
+        heightmap = np.concatenate((object_img.reshape(1, self.heightmap_size, self.heightmap_size), gripper_img), axis=0)
+      elif self.view_type.find('height') > -1:
         gripper_pos = self.robot._getEndEffectorPosition()
         heightmap[0, gripper_img == 1] = gripper_pos[2]
       else:
         heightmap[0, gripper_img == 1] = 0
-      # gripper_img = gripper_img.reshape([1, self.heightmap_size, self.heightmap_size])
-      # img = (self.heightmap).astype(np.float32).reshape(self.heightmap_size, self.heightmap_size, 1)
-      # temp_map = cv2.inpaint(img, gripper_img.reshape(self.heightmap_size, self.heightmap_size, 1).astype(np.uint8), 10,
-      #                        cv2.INPAINT_NS)
       return self._isHolding(), None, heightmap
     else:
       obs = self._getVecObservation()
@@ -284,15 +287,15 @@ class CloseLoopEnv(BaseEnv):
     gripper_half_size = 5 * self.workspace_size / self.obs_size_m
     gripper_half_size = round(gripper_half_size/128*self.heightmap_size)
     if self.robot_type in ['panda']:
-      gripper_max_open = 30 * self.workspace_size / self.obs_size_m
-      gripper_half_size = 3
+      gripper_max_open = 26 * self.workspace_size / self.obs_size_m
+      gripper_half_size = 5
     elif self.robot_type in ['ur5', 'ur5_robotiq']:
       gripper_max_open = 42 * self.workspace_size / self.obs_size_m
     elif self.robot_type == 'kuka':
       gripper_max_open = 45 * self.workspace_size / self.obs_size_m
     else:
       raise NotImplementedError
-    d = int(gripper_max_open/128*self.heightmap_size * gripper_state)
+    d = int(gripper_max_open/128*self.heightmap_size * gripper_state) + 2 * gripper_half_size - 2
     anchor = self.heightmap_size//2
     im[int(anchor - d // 2 - gripper_half_size):int(anchor - d // 2 + gripper_half_size), int(anchor - gripper_half_size):int(anchor + gripper_half_size)] = 1
     im[int(anchor + d // 2 - gripper_half_size):int(anchor + d // 2 + gripper_half_size), int(anchor - gripper_half_size):int(anchor + gripper_half_size)] = 1
@@ -341,7 +344,7 @@ class CloseLoopEnv(BaseEnv):
       else:
         depth = heightmap
       return depth
-    elif self.view_type in ['camera_center_xyz', 'camera_center_xyz_height', 'camera_center_xyz_segm']:
+    elif self.view_type in ['camera_center_xyz', 'camera_center_xyz_2channel', 'camera_center_xyz_height', 'camera_center_xyz_segm']:
       # xyz centered, gripper will be visible
       gripper_pos[2] += gripper_z_offset
       target_pos = [gripper_pos[0], gripper_pos[1], 0]
@@ -351,7 +354,7 @@ class CloseLoopEnv(BaseEnv):
         heightmap, segmentation = self.sensor.getHeightmapSegmentation(self.heightmap_size)
       else:
         heightmap = self.sensor.getHeightmap(self.heightmap_size)
-      if self.view_type in ['camera_center_xyz', 'camera_center_xyz_segm']:
+      if self.view_type in ['camera_center_xyz', 'camera_center_xyz_2channel', 'camera_center_xyz_segm']:
         obs = -heightmap + gripper_pos[2]
         if self.view_type == 'camera_center_xyz_segm':
           obs = obs.reshape(1, self.heightmap_size, self.heightmap_size)

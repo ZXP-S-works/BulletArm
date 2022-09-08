@@ -11,6 +11,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
     self.target_object = None
     self.stage = 0
     self.view_type = config['view_type'] if 'view_type' in config.keys() else None
+    self.add_noise2target = config['add_noise2target'] if 'add_noise2target' in config.keys() else False
 
   def getNextActionToCurrentTarget(self):
     x, y, z, r = self.getActionByGoalPose(self.current_target[0], self.current_target[1])
@@ -39,6 +40,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
           self.target_object = objects[0]
 
       object_pos = list(self.target_object.getPosition())
+      object_pos[:2] += (np.random.random(2) - 0.5) * 0.2 if self.add_noise2target else 0
       object_pos[2] += (np.random.random() - 1) * 0.02
       object_rot = list(transformations.euler_from_quaternion(self.target_object.getRotation()))
       rz = (np.random.random() - 0.5) * np.pi

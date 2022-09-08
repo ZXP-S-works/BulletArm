@@ -18,7 +18,7 @@ class TestBulletHouseholdPickingCluttered(unittest.TestCase):
                 'reward_type': 'step_left', 'simulate_grasp': True, 'perfect_grasp': False, 'robot': 'kuka',
                 'object_init_space_check': 'point', 'physics_mode': 'fast', 'object_scale_range': (0.8, 0.8),
                 'view_type': 'camera_center_xyz', 'hard_reset_freq': 1000, 'z_termination': True}
-  planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8}
+  planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8, 'add_noise2target': True}
   env_config['seed'] = 1
   # env = CloseLoopHouseholdPickingClutteredEnv(env_config)
   # planner = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)
