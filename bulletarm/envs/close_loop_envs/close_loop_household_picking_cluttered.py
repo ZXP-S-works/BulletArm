@@ -182,7 +182,7 @@ if __name__ == '__main__':
                 'view_type': 'camera_center_xyz_2channel', 'hard_reset_freq': 1000, 'z_termination': True,
                 'binary_gripper': True}
   planner_config = {'random_orientation': False, 'dpos': 0.05, 'drot': np.pi/8, 'view_type': env_config['view_type'],
-                    'add_noise2target': True}
+                    'add_noise2target': False}
   env_config['seed'] = 1
   env = CloseLoopHouseholdPickingClutteredEnv(env_config)
   planner = CloseLoopHouseholdPickingClutteredPlanner(env, planner_config)

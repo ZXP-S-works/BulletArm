@@ -40,7 +40,7 @@ class CloseLoopHouseholdPickingClutteredPlanner(CloseLoopPlanner):
           self.target_object = objects[0]
 
       object_pos = list(self.target_object.getPosition())
-      object_pos[:2] += (np.random.random(2) - 0.5) * 0.2 if self.add_noise2target else 0
+      object_pos[:2] += (np.random.random(2) - 0.5) * 0.2 if self.add_noise2target else np.zeros(2)
       object_pos[2] += (np.random.random() - 1) * 0.02
       object_rot = list(transformations.euler_from_quaternion(self.target_object.getRotation()))
       rz = (np.random.random() - 0.5) * np.pi
